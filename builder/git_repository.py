@@ -10,6 +10,7 @@ class GitRepository:
     """
     Class to manage GIT repositories
     """
+
     def __init__(self, path, url):
         """
         Clone the repository if not exist or pull

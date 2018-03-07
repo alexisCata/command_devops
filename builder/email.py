@@ -8,6 +8,7 @@ __all__ = ['Email']
 class Email:
     """Class to handle the SMTP server and send emails    
     """
+
     def __init__(self, server, port, username, password):
         self._server = server
         self._port = port

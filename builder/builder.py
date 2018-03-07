@@ -9,6 +9,7 @@ class Builder:
     """
     Class to build files from one origin repo into a target repo
     """
+
     def __init__(self, origin, target, email):
         self.origin = origin
         self.target = target
