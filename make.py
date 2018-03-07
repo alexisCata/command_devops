@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import datetime
 import json
-import logging
 import pprint
 import sys
 
@@ -13,13 +12,19 @@ from builder.email import Email
 from builder.git_repository import GitRepository
 from builder.utils import bool_input
 
-logger = logging.getLogger('cli')
-
 
 @command(command_type=CommandType.PYTHON,
          args=((('--config',), {'help': 'Config file', 'default': 'config.json'}),),
          parser_opts={'help': 'Run builder'})
 def build(*args, **kwargs):
+    """
+    Command that performs thet gets a GIT repository, compiles some files and pushes them to another repository
+    If build is not OK it send an email with the changelog and the error
+    :param args: 
+    :param kwargs: build command arguments
+    :return: 
+    """
+    result = 0
     with open(kwargs['config']) as f:
         config = json.load(f)
 
@@ -29,44 +34,34 @@ def build(*args, **kwargs):
         last_execution = datetime.datetime.strptime(config["last_execution"], "%Y-%m-%d %H:%M:%S.%f") \
             if config["last_execution"] else datetime.datetime(1900, 1, 1)
 
-        builder = Builder(config["git"]["repo_path"], config["target"]["target_path"])
+        email = Email(config["email"]["smtp_server"],
+                      config["email"]["smtp_port"],
+                      config["email"]["username"],
+                      config["email"]["password"], )
 
         origin_repo = GitRepository(config["git"]["repo_path"], config["git"]["git_repo"])
         target_repo = GitRepository(config["target"]["target_path"],
                                     config["target"]["git_target"].format(config["git"]["git_user"],
                                                                           config["git"]["git_pass"]))
 
-        if builder.build(config["target"]["build_file"]):
+        builder = Builder(origin=origin_repo, target=target_repo, email=email)
 
-            builder.handle_built(config["target"]["files"], origin_repo, target_repo)
+        build_ok = builder.build(config["target"]["build_file"])
 
+        if build_ok:
+            builder.push_binary(config["target"]["files"])
             config["last_execution"] = str(datetime.datetime.now())
 
             with open(kwargs['config'], "w") as f:
                 json.dump(config, f)
                 print("Success")
         else:
-            handle_error(origin_repo, last_execution, config, builder.stdout, builder.stderr)
+            builder.send_email_error(last_execution, config["email"]["email_from"], config["email"]["email_to"],
+                                     config["email"]["subject"])
 
-
-def handle_error(origin_repo, last_execution, config, stdout, stderr):
-    log_to_send = origin_repo.changelog_from(last_execution)
-
-    email = Email(config["email"]["smtp_server"],
-                  config["email"]["smtp_port"],
-                  config["email"]["username"],
-                  config["email"]["password"], )
-
-    email.send(config["email"]["email_from"],
-               config["email"]["email_to"],
-               config["email"]["subject"],
-               email.body_from_builder_output(log_to_send, stdout, stderr))
-
-    print("==ERROR==")
-    print(stderr)
-    print("Email sent")
+        result = 0 if build_ok else -1
+    return result
 
 
 if __name__ == '__main__':
-    main = Main()
-    sys.exit(main.run())
+    sys.exit(Main().run())

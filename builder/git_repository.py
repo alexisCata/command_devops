@@ -1,25 +1,29 @@
 import datetime
 import os
 
-from git import Repo, Git, GitCommandError
+from git import Repo, GitCommandError
 
 __all__ = ['GitRepository']
 
 
 class GitRepository:
+    """
+    Class to manage GIT repositories
+    """
     def __init__(self, path, url):
+        """
+        Clone the repository if not exist or pull
+        :param path: 
+        :param url: 
+        """
         self.path = path
         self._url = url
-        self._prepare_folder()
+        os.makedirs(self.path, exist_ok=True)
         if not os.listdir(self.path):
             self.repository = Repo.clone_from(url=self._url, to_path=self.path)
         else:
             self.repository = Repo(self.path)
             self.pull()
-
-    def _prepare_folder(self):
-        if not os.path.isdir(self.path):
-            os.makedirs(self.path)
 
     def pull(self):
         remote = self.repository.remote("origin")
@@ -37,9 +41,14 @@ class GitRepository:
             remote = self.repository.remote("origin")
             remote.push(refspec="master:master")
         except GitCommandError as e:
-            print(e)
+            print(e.message)
 
-    def changelog_from(self, from_last_execution):
+    def changelog_from(self, timestamp):
+        """
+        Returns the GIT changelog since a given date
+        :param timestamp: 
+        :return: 
+        """
         log_to_send = ""
         try:
             log = self.repository.git.log()
@@ -54,9 +63,9 @@ class GitRepository:
                 start_index = line.index("Date:   ") + 8
                 end_index = line.index("\n", start_index)
                 date = datetime.datetime.strptime(line[start_index:end_index], "%a %b %d %H:%M:%S %Y +%f")
-                if date > from_last_execution:
+                if date > timestamp:
                     log_to_send += "commit " + line + "\n"
-        except Exception as e:
-            print(e.message)
+        except:
+            print("Cannot get changelog")
 
         return log_to_send
