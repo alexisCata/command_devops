@@ -42,7 +42,7 @@ class GitRepository:
             remote = self.repository.remote("origin")
             remote.push(refspec="master:master")
         except GitCommandError as e:
-            print(e.message)
+            print(e)
 
     def changelog_from(self, timestamp):
         """

@@ -35,3 +35,4 @@ class Builder:
 
         self._email.send(email_from, email_to, subject,
                          self._email.body_from_builder_output(log_to_send, self._stdout, self._stderr))
+        print("Error email sent...")
