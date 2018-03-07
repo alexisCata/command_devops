@@ -39,17 +39,17 @@ def build(*args, **kwargs):
                       config["email"]["username"],
                       config["email"]["password"], )
 
-        origin_repo = GitRepository(config["git"]["repo_path"], config["git"]["git_repo"])
-        target_repo = GitRepository(config["target"]["target_path"],
-                                    config["target"]["git_target"].format(config["git"]["git_user"],
-                                                                          config["git"]["git_pass"]))
+        origin_repo = GitRepository(config["git_origin"]["repo_path"], config["git_origin"]["git_repo"])
+        target_repo = GitRepository(config["git_target"]["target_path"],
+                                    config["git_target"]["git_target"].format(config["git_origin"]["git_user"],
+                                                                          config["git_origin"]["git_pass"]))
 
         builder = Builder(origin=origin_repo, target=target_repo, email=email)
 
-        build_ok = builder.build(config["target"]["build_file"])
+        build_ok = builder.build(config["git_target"]["build_file"])
 
         if build_ok:
-            builder.push_binary(config["target"]["files"])
+            builder.push_binary(config["git_target"]["files"])
             config["last_execution"] = str(datetime.datetime.now())
 
             with open(kwargs['config'], "w") as f:
