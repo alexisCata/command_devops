@@ -31,17 +31,17 @@ python make.py build --config config.json
     "email_to": "alexisfloresortega@gmail.com",
     "subject": "SCRIPT ERROR"
   },
-  "git": {
+  "git_origin": {
     "git_repo": "https://github.com/alexiscata/git_task",
     "git_user": "alexiscata",
     "git_pass": "********",
-    "repo_path": "./repository"
+    "repo_path": "./repository",    
+    "build_file": "./build.sh"
   },
-  "target": {
+  "git_target": {
     "git_target": "https://{}:{}@github.com/alexisCata/target_task",
     "target_path": "./target_repository",
-    "files": ["HelloWorld.class", "ByeWorld.class"],
-    "build_file": "./build.sh"
+    "files": ["HelloWorld.class", "ByeWorld.class"]
   },
   "last_execution": null
 }
@@ -49,11 +49,10 @@ python make.py build --config config.json
 
 ### Help
 ```shell
-python make.py -h
+python make.py build -h
 ```
 ```shell
-python make.py build -h
-
+python make.py -h
 ```
 
 ### Dependencies

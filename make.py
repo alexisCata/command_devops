@@ -42,11 +42,11 @@ def build(*args, **kwargs):
         origin_repo = GitRepository(config["git_origin"]["repo_path"], config["git_origin"]["git_repo"])
         target_repo = GitRepository(config["git_target"]["target_path"],
                                     config["git_target"]["git_target"].format(config["git_origin"]["git_user"],
-                                                                          config["git_origin"]["git_pass"]))
+                                                                              config["git_origin"]["git_pass"]))
 
         builder = Builder(origin=origin_repo, target=target_repo, email=email)
 
-        build_ok = builder.build(config["git_target"]["build_file"])
+        build_ok = builder.build(config["git_origin"]["build_file"])
 
         if build_ok:
             builder.push_binary(config["git_target"]["files"])
@@ -54,7 +54,7 @@ def build(*args, **kwargs):
 
             with open(kwargs['config'], "w") as f:
                 json.dump(config, f)
-                print("Success")
+            print("Success")
         else:
             builder.send_email_error(last_execution, config["email"]["email_from"], config["email"]["email_to"],
                                      config["email"]["subject"])
